@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Smart Handwritten Digit Recognition</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- NAVBAR -->
+
+        <nav class="navbar">
+
+            <div class="logo">
+                Digit<span>AI</span>
+            </div>
+
+            <div class="nav-links">
+
+                <a href="#predict">
+                    Try Model
+                </a>
+
+                <a href="#about">
+                    About
+                </a>
+
+                <a href="#dataset">
+                    Dataset
+                </a>
+
+                <a href="#models">
+                    Models
+                </a>
+
+                <a href="#tech">
+                    Tech Stack
+                </a>
+
+            </div>
+
+        </nav>
+
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <p class="eyebrow">
+                    AI / ML Portfolio Project
+                </p>
+
+                <h1>
+                    Smart Handwritten
+                    <span>Digit Recognition</span>
+                </h1>
+
+                <p class="hero-description">
+                    An interactive deep learning system that recognizes
+                    handwritten digits using a trained Convolutional
+                    Neural Network.
+                </p>
+
+                <div class="badge-row">
+
+                    <div class="model-badge">
+                        CNN
+                    </div>
+
+                    <div class="model-badge">
+                        MNIST Dataset
+                    </div>
+
+                    <div class="model-badge">
+                        99.06% Test Accuracy
+                    </div>
+
+                </div>
+
+                <a
+                    href="#predict"
+                    class="hero-button"
+                >
+                    Try the Model
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- PREDICTION SECTION -->
+
+        <section
+            class="section"
+            id="predict"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-tag">
+                    Live Prediction
+                </p>
+
+                <h2>
+                    Try the Model
+                </h2>
+
+                <p>
+                    Draw one handwritten digit or upload an image
+                    containing a single digit from 0 to 9.
+                </p>
+
+            </div>
+
+
+            <div class="main-card">
+
+                <!-- DRAW -->
+
+                <div class="input-section">
+
+                    <div class="input-icon">
+                        ✍
+                    </div>
+
+                    <h3>
+                        Draw a Digit
+                    </h3>
+
+                    <p>
+                        Draw one digit clearly inside the canvas.
+                    </p>
+
+                    <canvas
+                        id="digitCanvas"
+                        width="280"
+                        height="280"
+                    ></canvas>
+
+                    <div class="button-row">
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            id="clearBtn"
+                        >
+                            Clear
+                        </button>
+
+                        <button
+                            type="button"
+                            class="primary-btn"
+                            id="predictCanvasBtn"
+                        >
+                            Predict Drawing
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="divider">
+                    OR
+                </div>
+
+
+                <!-- UPLOAD -->
+
+                <div class="input-section">
+
+                    <div class="input-icon">
+                        ↑
+                    </div>
+
+                    <h3>
+                        Upload an Image
+                    </h3>
+
+                    <p>
+                        Upload one handwritten digit image.
+                    </p>
+
+                    <form
+                        method="POST"
+                        enctype="multipart/form-data"
+                        id="uploadForm"
+                    >
+
+                        <label class="upload-box">
+
+                            <input
+                                type="file"
+                                name="image"
+                                id="imageInput"
+                                accept="image/*"
+                                required
+                            >
+
+                            <div class="upload-content">
+
+                                <div class="upload-icon">
+                                    ↑
+                                </div>
+
+                                <span>
+                                    Click to choose an image
+                                </span>
+
+                                <small>
+                                    PNG, JPG or JPEG
+                                </small>
+
+                            </div>
+
+                        </label>
+
+                        <img
+                            id="previewImage"
+                            class="preview-image"
+                            alt="Selected digit preview"
+                        >
+
+                        <button
+                            type="submit"
+                            class="primary-btn full-btn"
+                        >
+                            Predict Uploaded Image
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- UPLOAD RESULT -->
+
+        {% if prediction is not none %}
+
+        <section class="result-section">
+
+            <div class="result-card">
+
+                <p class="result-label">
+                    Prediction Result
+                </p>
+
+                <div class="predicted-digit">
+                    {{ prediction }}
+                </div>
+
+                <p class="confidence-text">
+                    Confidence: {{ confidence }}%
+                </p>
+
+                <div class="confidence-bar">
+
+                    <div
+                        class="confidence-fill"
+                        id="uploadConfidenceFill"
+                        data-confidence="{{ confidence }}"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- ERROR -->
+
+        {% if error %}
+
+        <div class="error-card">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        <!-- CANVAS RESULT -->
+
+        <section class="result-section">
+
+            <div
+                class="result-card hidden"
+                id="canvasResult"
+            >
+
+                <p class="result-label">
+                    Prediction Result
+                </p>
+
+                <div
+                    class="predicted-digit"
+                    id="canvasPrediction"
+                >
+                    -
+                </div>
+
+                <p
+                    class="confidence-text"
+                    id="canvasConfidence"
+                >
+                    Confidence: -
+                </p>
+
+                <div class="confidence-bar">
+
+                    <div
+                        class="confidence-fill"
+                        id="canvasConfidenceFill"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- HOW IT WORKS -->
+
+        <section class="section">
+
+            <div class="section-heading">
+
+                <p class="section-tag">
+                    Workflow
+                </p>
+
+                <h2>
+                    How It Works
+                </h2>
+
+            </div>
+
+
+            <div class="steps-grid">
+
+                <div class="step-card">
+
+                    <div class="step-number">
+                        01
+                    </div>
+
+                    <h3>
+                        Input
+                    </h3>
+
+                    <p>
+                        Draw or upload one handwritten digit.
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <div class="step-number">
+                        02
+                    </div>
+
+                    <h3>
+                        Preprocessing
+                    </h3>
+
+                    <p>
+                        The image is converted, cropped, resized,
+                        centered and normalized.
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <div class="step-number">
+                        03
+                    </div>
+
+                    <h3>
+                        CNN Model
+                    </h3>
+
+                    <p>
+                        The processed image is passed through the
+                        trained convolutional neural network.
+                    </p>
+
+                </div>
+
+
+                <div class="step-card">
+
+                    <div class="step-number">
+                        04
+                    </div>
+
+                    <h3>
+                        Prediction
+                    </h3>
+
+                    <p>
+                        The predicted digit and confidence score
+                        are displayed.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ABOUT -->
+
+        <section
+            class="section"
+            id="about"
+        >
+
+            <div class="about-card">
+
+                <div>
+
+                    <p class="section-tag">
+                        About
+                    </p>
+
+                    <h2>
+                        About the Project
+                    </h2>
+
+                    <p>
+                        This project explores multiple machine learning
+                        and deep learning approaches for handwritten
+                        digit recognition.
+                    </p>
+
+                    <p>
+                        Logistic Regression, Support Vector Machine,
+                        Random Forest, Neural Network and CNN models
+                        were trained and evaluated using classification
+                        metrics.
+                    </p>
+
+                    <p>
+                        The CNN achieved the highest test accuracy of
+                        <strong>99.06%</strong> and was selected for
+                        integration with the Flask web application.
+                    </p>
+
+                </div>
+
+                <div class="about-stat">
+
+                    <span>
+                        99.06%
+                    </span>
+
+                    <p>
+                        CNN Test Accuracy
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- MNIST DATASET -->
+
+        <section
+            class="section"
+            id="dataset"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-tag">
+                    Dataset
+                </p>
+
+                <h2>
+                    MNIST Handwritten Digit Dataset
+                </h2>
+
+                <p>
+                    The project uses the MNIST dataset containing
+                    grayscale handwritten digit images from 0 to 9.
+                </p>
+
+            </div>
+
+
+            <div class="dataset-card">
+
+                <div class="dataset-description">
+
+                    <h3>
+                        About MNIST
+                    </h3>
+
+                    <p>
+                        MNIST is a widely used benchmark dataset for
+                        handwritten digit recognition. Each sample is a
+                        grayscale image with a size of 28 × 28 pixels.
+                    </p>
+
+                    <p>
+                        The dataset contains 60,000 training images and
+                        10,000 testing images distributed across ten
+                        digit classes.
+                    </p>
+
+                </div>
+
+
+                <div class="dataset-stats">
+
+                    <div class="dataset-stat">
+
+                        <strong>
+                            60,000
+                        </strong>
+
+                        <span>
+                            Training Images
+                        </span>
+
+                    </div>
+
+
+                    <div class="dataset-stat">
+
+                        <strong>
+                            10,000
+                        </strong>
+
+                        <span>
+                            Test Images
+                        </span>
+
+                    </div>
+
+
+                    <div class="dataset-stat">
+
+                        <strong>
+                            10
+                        </strong>
+
+                        <span>
+                            Classes
+                        </span>
+
+                    </div>
+
+
+                    <div class="dataset-stat">
+
+                        <strong>
+                            28 × 28
+                        </strong>
+
+                        <span>
+                            Image Size
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- MODEL PERFORMANCE -->
+
+        <section
+            class="section"
+            id="models"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-tag">
+                    Experimental Results
+                </p>
+
+                <h2>
+                    Model Performance
+                </h2>
+
+                <p>
+                    Five models were compared before selecting CNN
+                    for the final web application.
+                </p>
+
+            </div>
+
+
+            <div class="performance-card">
+
+                <div class="performance-row performance-header">
+
+                    <div>
+                        Model
+                    </div>
+
+                    <div>
+                        Accuracy
+                    </div>
+
+                    <div>
+                        Result
+                    </div>
+
+                </div>
+
+
+                <div class="performance-row">
+
+                    <div>
+                        Logistic Regression
+                    </div>
+
+                    <div>
+                        92.57%
+                    </div>
+
+                    <div>
+                        Baseline
+                    </div>
+
+                </div>
+
+
+                <div class="performance-row">
+
+                    <div>
+                        Support Vector Machine
+                    </div>
+
+                    <div>
+                        98.37%
+                    </div>
+
+                    <div>
+                        Strong
+                    </div>
+
+                </div>
+
+
+                <div class="performance-row">
+
+                    <div>
+                        Random Forest
+                    </div>
+
+                    <div>
+                        97.04%
+                    </div>
+
+                    <div>
+                        Strong
+                    </div>
+
+                </div>
+
+
+                <div class="performance-row">
+
+                    <div>
+                        Neural Network
+                    </div>
+
+                    <div>
+                        97.69%
+                    </div>
+
+                    <div>
+                        Deep Learning
+                    </div>
+
+                </div>
+
+
+                <div class="performance-row best-model-row">
+
+                    <div>
+                        CNN
+                    </div>
+
+                    <div>
+                        99.06%
+                    </div>
+
+                    <div>
+                        <span class="best-badge">
+                            Best Model
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TECH STACK -->
+
+        <section
+            class="section"
+            id="tech"
+        >
+
+            <div class="section-heading">
+
+                <p class="section-tag">
+                    Technologies
+                </p>
+
+                <h2>
+                    Tech Stack
+                </h2>
+
+            </div>
+
+
+            <div class="tech-grid">
+
+                <div class="tech-card">
+                    Python
+                </div>
+
+                <div class="tech-card">
+                    TensorFlow
+                </div>
+
+                <div class="tech-card">
+                    Keras
+                </div>
+
+                <div class="tech-card">
+                    Flask
+                </div>
+
+                <div class="tech-card">
+                    NumPy
+                </div>
+
+                <div class="tech-card">
+                    HTML
+                </div>
+
+                <div class="tech-card">
+                    CSS
+                </div>
+
+                <div class="tech-card">
+                    JavaScript
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- GITHUB -->
+
+        <section class="github-section">
+
+            <h2>
+                Explore the Complete Project
+            </h2>
+
+            <p>
+                Source code, model experiments and implementation
+                details will be available on GitHub.
+            </p>
+
+            <button
+                class="github-button"
+                type="button"
+                disabled
+            >
+                GitHub Link Coming Soon
+            </button>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer class="footer">
+
+            <div class="logo">
+                Digit<span>AI</span>
+            </div>
+
+            <p>
+                Smart Handwritten Digit Recognition System
+            </p>
+
+            <p class="footer-small">
+                Built with Machine Learning, Deep Learning and Flask.
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <!-- UPLOAD CONFIDENCE -->
+
+    <script>
+
+        const uploadConfidenceFill =
+            document.getElementById(
+                "uploadConfidenceFill"
+            );
+
+        if (uploadConfidenceFill) {
+
+            const confidence =
+                uploadConfidenceFill.dataset.confidence;
+
+            uploadConfidenceFill.style.width =
+                confidence + "%";
+        }
+
+    </script>
+
+
+    <!-- EXISTING JAVASCRIPT -->
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+
+</html>

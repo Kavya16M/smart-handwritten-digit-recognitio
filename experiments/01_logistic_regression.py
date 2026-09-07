@@ -1,0 +1,303 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+from sklearn.datasets import fetch_openml
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# =========================
+# CREATE RESULTS PATH
+# =========================
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
+
+RESULTS_DIR = os.path.join(
+    BASE_DIR,
+    "results"
+)
+
+os.makedirs(
+    RESULTS_DIR,
+    exist_ok=True
+)
+
+
+# =========================
+# LOAD DATASET
+# =========================
+
+print("Loading MNIST dataset...")
+
+mnist = fetch_openml(
+    "mnist_784",
+    version=1,
+    as_frame=False
+)
+
+X = mnist.data
+y = mnist.target.astype(np.int64)
+
+X_train = X[:60000]
+y_train = y[:60000]
+
+X_test = X[60000:]
+y_test = y[60000:]
+
+print("MNIST dataset loaded.")
+
+
+# =========================
+# PREPROCESSING
+# =========================
+
+X_train = X_train / 255.0
+X_test = X_test / 255.0
+
+print("Training data shape:", X_train.shape)
+print("Testing data shape:", X_test.shape)
+
+
+# =========================
+# BUILD MODEL
+# =========================
+
+model = LogisticRegression(
+    max_iter=100,
+    solver="lbfgs"
+)
+
+
+# =========================
+# TRAIN MODEL
+# =========================
+
+print("\nTraining Logistic Regression...")
+
+model.fit(
+    X_train,
+    y_train
+)
+
+print("Training completed.")
+
+
+# =========================
+# PREDICTION
+# =========================
+
+y_pred = model.predict(
+    X_test
+)
+
+
+# =========================
+# METRICS
+# =========================
+
+accuracy = accuracy_score(
+    y_test,
+    y_pred
+)
+
+precision = precision_score(
+    y_test,
+    y_pred,
+    average="weighted"
+)
+
+recall = recall_score(
+    y_test,
+    y_pred,
+    average="weighted"
+)
+
+f1 = f1_score(
+    y_test,
+    y_pred,
+    average="weighted"
+)
+
+
+print("\n===== LOGISTIC REGRESSION METRICS =====")
+
+print("Accuracy :", accuracy)
+print("Precision:", precision)
+print("Recall   :", recall)
+print("F1 Score :", f1)
+
+
+# =========================
+# CONFUSION MATRIX
+# =========================
+
+cm = confusion_matrix(
+    y_test,
+    y_pred
+)
+
+print("\nConfusion Matrix:\n")
+print(cm)
+
+
+# =========================
+# CONFUSION MATRIX VISUAL
+# =========================
+
+plt.figure(
+    figsize=(8, 6)
+)
+
+plt.imshow(
+    cm,
+    cmap="Blues"
+)
+
+plt.title(
+    "Confusion Matrix - Logistic Regression"
+)
+
+plt.colorbar()
+
+plt.xlabel(
+    "Predicted Label"
+)
+
+plt.ylabel(
+    "Actual Label"
+)
+
+plt.xticks(
+    range(10)
+)
+
+plt.yticks(
+    range(10)
+)
+
+
+for i in range(10):
+    for j in range(10):
+
+        plt.text(
+            j,
+            i,
+            cm[i, j],
+            ha="center",
+            va="center"
+        )
+
+
+plt.tight_layout()
+
+
+# SAVE CONFUSION MATRIX
+
+confusion_path = os.path.join(
+    RESULTS_DIR,
+    "logistic_regression_confusion_matrix.png"
+)
+
+plt.savefig(
+    confusion_path,
+    dpi=300,
+    bbox_inches="tight"
+)
+
+print(
+    "\nConfusion matrix saved at:",
+    confusion_path
+)
+
+plt.show()
+
+
+# =========================
+# METRICS GRAPH
+# =========================
+
+metrics = [
+    accuracy,
+    precision,
+    recall,
+    f1
+]
+
+names = [
+    "Accuracy",
+    "Precision",
+    "Recall",
+    "F1 Score"
+]
+
+
+plt.figure(
+    figsize=(8, 5)
+)
+
+plt.bar(
+    names,
+    metrics
+)
+
+plt.ylim(
+    0,
+    1
+)
+
+plt.title(
+    "Logistic Regression Performance"
+)
+
+plt.ylabel(
+    "Score"
+)
+
+plt.grid(
+    axis="y",
+    alpha=0.3
+)
+
+plt.tight_layout()
+
+
+# SAVE METRICS GRAPH
+
+metrics_path = os.path.join(
+    RESULTS_DIR,
+    "logistic_regression_metrics.png"
+)
+
+plt.savefig(
+    metrics_path,
+    dpi=300,
+    bbox_inches="tight"
+)
+
+print(
+    "Metrics graph saved at:",
+    metrics_path
+)
+
+plt.show()
+
+
+# =========================
+# COMPLETED
+# =========================
+
+print(
+    "\nLogistic Regression experiment completed successfully."
+)
+
+
